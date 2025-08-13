@@ -46,7 +46,9 @@ First, I created a dummy classifier that simply predicted that every customer wo
 
 Next, I generated classifiers using four classification methods: linear regression, K-nearest neighbors, a decision tree, and support vector machines. The graph below shows the results of my initial test:
 
-![Model Comparison Graph](images/model_comparison.png)
+![Model Train Time](images/train_time.png)
+
+![Model Train and Test Accuracy](images/model_accuracy.png)
 
 This shows strong performance for logistic regression, which had the highest test accuracy. The support vector classifier approach was not far behind, but took over 10x as long to run. K-nearest neighbors was very fast and decently accurate, while the decision tree approach was heavily overfit.
 
@@ -54,14 +56,46 @@ To address the overfitting on the decision tree approach, I performed a grid sea
 
 I also tried to see if I could improve the performance of the K-nearest neighbors classifier by varying the n_neighbors parameter (default is 5). A grid search found n_neighbors=17 to be the optimal parameter value, however performance only improved marginally (from 90.2% test accuracy to 91.0% test accuracy).
 
+I also compared the recall scores of the various approaches (discussed more in the [Jupyter notebook](prompt_III.ipynb)) and found that the decision tree with max depth of 6 performed the best in terms of recall score.
+
+Recall scores:
+Dummy classifier:         0.0
+Logistic Regression:      0.492
+KNN (k=5):                0.488
+Decision Tree (defaults): 0.533
+SVC:                      0.426
+Decision Tree (depth6)  : 0.568
+KNN (n=17)              : 0.484
+
 ### Evaluation
 
-The models that I created performed ok - a mae of \$6800 and a medae of \$4000 is respectable, but not super precise. I think that the messiness of the original dataset was quite difficult to deal with here. I had to throw out the model column almost entirely. I think that with some data that was better collected, or more precisely transcribed, it would have been easier to build a more precise model. In addition, with more time and resources I could have potentially undertaken a much more extensive data cleaning operation, revealing more useful information that the model could use to make its predictions more precise.
+# Logistic Regression Classifier: Largest Coefficients (positive and negative):
 
-### Deployment
+ euribor3m^3                            2.028670
+ emp.var.rate^3                         1.446931
+ duration^3                             1.410260
+ pdays euribor3m^2                      1.213136
+ age euribor3m^2                        0.981491
+ month_sep                              0.960668
+ euribor3m^2 nr.employed                0.944269
+ campaign emp.var.rate cons.conf.idx    0.930110
+ euribor3m^2                            0.883121
+ cons.price.idx euribor3m^2             0.874995
+ 
+ month_apr                             -0.822581
+ cons.conf.idx^3                       -0.894728
+ month_jun                             -0.967512
+ age^3                                 -1.083950
+ duration^2 nr.employed                -1.143500
+ month_may                             -1.248751
+ cons.conf.idx euribor3m^2             -1.288728
+ duration^2                            -1.389337
+ duration^2 cons.price.idx             -1.410246
+ age^2 cons.conf.idx                   -1.677975
+ 
 
-A lot of the feedback that I have for the client, as I have already described extensively throughout this report, has to do with data collection and transcription. A lot of the data here is quite messy and hard to work with, or missing completely. A standardized list of the most common car models that my client cars most about would be really helpful. If my client sells, for example, a lot of Ford F-150s, we could build an individual model for just Ford F-150s, and that would be far higher precision for those specialized cases than this general model. But doing that untargeted in this exercise would be building far too many models without that additional info from my client.
+For the evaluation, I find it easiest to look at the logistic regression classifier - one of the highest performing classifiers - and see which coefficients are largest (positive or negative), indicating which columns had the largest impact on the classifier. We see here that euribor3m - the 3 month interest rate for European banks - is one of the strongest indicators of the success of a marketing campaign. This and other major coefficients here would indicate that current economic conditions are of larger importance than demographic factors when conducting a marketing campaign like this one, which is an interesting and important insight.
 
-In other words, I guess that part of the takeaway here is that business understanding is extremely important for this kind of task. Because this is not a real report for a real client, I find that my business understanding of what my client is looking for is extremely vague, because all we know is that it is some generic used car dealership. In the real world, I imagine that I would want to ask a lot about exactly what their business looks like, where it is located, what kinds of cars they sell most often, and so on. Indeed, a dataset of cars that my client has sold in the past would help a lot.
+Along similar lines, we find that the consumer confidence index has a strong negative correlation with wanting to subscribe to a savings account, which makes sense as well. We also see that time of year plays a major role: the campaigns were very unsuccessful in April, May, and June, while highly successful in September.
 
-Along similar lines, something that jumps out is the effect of antique cars on the used car market. Generally, as a car gets older, its value decreases - until you get to rare antiques, where the value skyrockets. If my client only ever sells 'normal' used cars, and doesn't sell rare antiques, we could exclude all of those from the dataset, and build a model that is much more sensitive to the price of 'normal' used cars. This model would perform much worse on rare antiques, but going back to the business understanding, the point of the model is to help the business, and it doesn't matter if the model performs poorly on a category of car that is irrelevant to the business. My client would happily take that tradeoff to increase modeling precision on its actual inventory.
+These insights go against my initial assumption that this kind of marketing campaign would be mostly about targeting users with the right demographics. However, it seems that while certain demographic qualities such as age are important, in general most demographic factors are overshadowed by global conditions and timeframes instead. This is good to know, as it means that the bank can decide to target their campaigns based primarily on public, global data, rather than having to invest in data collection about the demographics of targeted consumers, potentially saving a lot of resources while also increasing campaign effectiveness.
